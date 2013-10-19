@@ -2,11 +2,17 @@ var cheerio = require("cheerio");
 var request = require("request");
 var async = require("async");
 var fs = require("fs");
+var args = require("optimist").argv;
 
 var url = "http://www.bnn.ca/Shows/Market-Call.aspx?PicksPage=";
+var filename = "scrape output.txt";
 var results = {};
 var requests = [];
-for(var i=1; i<=3; i++){
+
+var pagesToGet = args.n || 10;
+var fileExport = args.e;
+
+for(var i=1; i<=pagesToGet; i++){
 	requests.push(getPageData.bind({}, i));
 }
 
@@ -42,11 +48,15 @@ function saveResults(){
 		output += sortable[i][0] + ": " + sortable[i][1] + "\n";
 	}
 
-	fs.writeFile("scrape output.txt", output, function(err){
-		if(err){
-			console.log(err);
-		} else {
-			console.log("Data downloaded");
-		}
-	});
+	if(fileExport){
+		fs.writeFile(filename, output, function(err){
+			if(err){
+				console.log(err);
+			} else {
+				console.log("Data logged to " + filename);
+			}
+		});
+	} else {
+		console.log(output);
+	}
 }
