@@ -3,9 +3,10 @@ var request = require("request");
 var async = require("async");
 var fs = require("fs");
 var args = require("optimist").argv;
+var jade = require("jade");
 
 var url = "http://www.bnn.ca/Shows/Market-Call.aspx?PicksPage=";
-var filename = "scrape output.txt";
+var filename = "scrape output.html";
 var results = {};
 var requests = [];
 
@@ -43,20 +44,29 @@ function saveResults(){
 		return b[1] - a[1];
 	});
 
-	var output = "";
-	for(var i in sortable){
-		output += sortable[i][0] + ": " + sortable[i][1] + "\n";
-	}
-
 	if(fileExport){
-		fs.writeFile(filename, output, function(err){
+		var jadeOptions = {
+			pretty: true,
+			picks: sortable
+		};
+		jade.renderFile("template.jade", jadeOptions, function(err, html){
 			if(err){
 				console.log(err);
 			} else {
-				console.log("Data logged to " + filename);
+				fs.writeFile(filename, html, function(err){
+					if(err){
+						console.log(err);
+					} else {
+						console.log("Data logged to " + filename);
+					}
+				});
 			}
 		});
 	} else {
-		console.log(output);
+		var consoleOutput = "";
+		for(var i in sortable){
+			consoleOutput += sortable[i][0] + ": " + sortable[i][1] + "\n";
+		}
+		console.log(consoleOutput);
 	}
 }
